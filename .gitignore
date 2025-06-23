@@ -33,7 +33,7 @@ local.properties
 .cxx/
 *.keystore
 !debug.keystore
-android/playstore-credentials.json
+
 # node.js
 #
 node_modules/
