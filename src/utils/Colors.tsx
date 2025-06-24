@@ -23,11 +23,3 @@ export const Colors = {
   textBold: '#393C35',
   themeColor: '#00AFEA',
 };
-
-
-
-
-
-
-
-
