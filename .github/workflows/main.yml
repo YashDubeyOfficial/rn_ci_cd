@@ -66,21 +66,21 @@ jobs:
       # Prefer to run localy e2e beacause it requires high computation and cost much on cloud services
       # If you have money go with Genymotion 0.05$ per minute😁
 
-      - name: Send Discord notification on failure
-        if: failure()
-        run: |
-          curl -H "Content-Type: application/json" \
-               -X POST \
-               -d '{"content": "🚨 CI/CD Build Failed! Error logs: Testing / Linting / Prettier Failed!"}' \
-               ${{ secrets.DISCORD_WEBHOOK_URL }}
+      # - name: Send Discord notification on failure
+      #   if: failure()
+      #   run: |
+      #     curl -H "Content-Type: application/json" \
+      #          -X POST \
+      #          -d '{"content": "🚨 CI/CD Build Failed! Error logs: Testing / Linting / Prettier Failed!"}' \
+      #          ${{ secrets.DISCORD_WEBHOOK_URL }}
 
-      - name: Send Discord notification on success
-        if: success()
-        run: |
-          curl -H "Content-Type: application/json" \
-               -X POST \
-               -d '{"content": "✅ Testing Passed"}' \
-               ${{ secrets.DISCORD_WEBHOOK_URL }}
+      # - name: Send Discord notification on success
+      #   if: success()
+      #   run: |
+      #     curl -H "Content-Type: application/json" \
+      #          -X POST \
+      #          -d '{"content": "✅ Testing Passed"}' \
+      #          ${{ secrets.DISCORD_WEBHOOK_URL }}
      
   deploy:
     runs-on: ubuntu-latest
