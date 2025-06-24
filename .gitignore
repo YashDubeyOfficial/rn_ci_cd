@@ -25,7 +25,6 @@ DerivedData
 # Android/IntelliJ
 #
 android/build/
-android/playstore-credentials.json
 .idea
 .gradle
 local.properties
