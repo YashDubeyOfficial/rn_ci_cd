@@ -25,6 +25,7 @@ DerivedData
 # Android/IntelliJ
 #
 android/build/
+android/playstore-credentials.json
 .idea
 .gradle
 local.properties
@@ -33,6 +34,7 @@ local.properties
 .cxx/
 *.keystore
 !debug.keystore
+
 
 # node.js
 #
