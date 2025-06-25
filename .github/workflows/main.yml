@@ -117,11 +117,10 @@ jobs:
 
       - name: Deploy to Google Play Store
         run: |
-          run: |
-            mkdir -p android/fastlane
-            printf "%s" "$GOOGLE_PLAY_SERVICE_ACCOUNT_JSON" > android/fastlane/playstore-credentials.json
-          env:
-            GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+          mkdir -p android/fastlane
+          printf "%s" "$GOOGLE_PLAY_SERVICE_ACCOUNT_JSON" > android/fastlane/playstore-credentials.json
+        env:
+          GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
 
       # - name: Send Discord notification on failure
       #   if: failure()
