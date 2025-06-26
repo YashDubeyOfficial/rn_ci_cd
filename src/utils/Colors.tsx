@@ -22,4 +22,5 @@ export const Colors = {
   disabled: '#E2E2E2',
   textBold: '#393C35',
   themeColor: '#00AFEA',
+  themeCoslor: '#00AFEA',
 };
