@@ -119,7 +119,8 @@ jobs:
         env:
           GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
         run: |
-          echo '${{ GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}' > android/playstore-credentials.json
+          mkdir -p android/fastlane
+          printf "%s" "${GOOGLE_PLAY_SERVICE_ACCOUNT_JSON}" > android/fastlane/playstore-credentials.json
           cd android
           fastlane playstore
 
