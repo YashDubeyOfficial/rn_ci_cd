@@ -3,10 +3,11 @@ name: CI and CD
 on:
   push:
     branches:
-      - main
+      - '**' # run CI on all branches
   pull_request:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
   lint-and-test:
@@ -85,6 +86,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: lint-and-test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
     steps:
       - name: Checkout code
@@ -115,9 +117,61 @@ jobs:
       - name: Install Fastlane
         run: sudo gem install fastlane -NV 
 
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Cache Gradle
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
       - name: Deploy to Google Play Store
+        env:
+          GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+          GCP_CLIENT_EMAIL: ${{ secrets.GCP_CLIENT_EMAIL }}
+          GCP_CLIENT_ID: ${{ secrets.GCP_CLIENT_ID }}
+          GCP_PRIVATE_KEY: ${{ secrets.GCP_PRIVATE_KEY }}
+          GCP_PRIVATE_KEY_ID: ${{ secrets.GCP_PRIVATE_KEY_ID }}
+          GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
         run: |
-          echo "$GOOGLE_PLAY_SERVICE_ACCOUNT_JSON" > android/fastlane/playstore-credentials.json
+          # Prefer a single JSON secret if provided
+          if [ -n "$GOOGLE_PLAY_SERVICE_ACCOUNT_JSON" ]; then
+            GOOGLE_PLAY_JSON_KEY="$GOOGLE_PLAY_SERVICE_ACCOUNT_JSON"
+            # If base64-encoded, decode
+            if echo "$GOOGLE_PLAY_JSON_KEY" | base64 -d >/dev/null 2>&1; then
+              GOOGLE_PLAY_JSON_KEY="$(echo "$GOOGLE_PLAY_JSON_KEY" | base64 -d)"
+            fi
+          else
+            # Build JSON from discrete GCP_* secrets
+            if [ -z "$GCP_CLIENT_EMAIL" ] || [ -z "$GCP_CLIENT_ID" ] || [ -z "$GCP_PRIVATE_KEY" ] || [ -z "$GCP_PRIVATE_KEY_ID" ] || [ -z "$GCP_PROJECT_ID" ]; then
+              echo "Missing required GCP_* secrets to construct service account JSON" >&2
+              exit 1
+            fi
+            PRIVATE_KEY="$GCP_PRIVATE_KEY"
+            # Replace literal \n with real newlines if present
+            PRIVATE_KEY="${PRIVATE_KEY//\\n/$'\n'}"
+            cat > /tmp/google_key.json <<EOF
+          {
+            "type": "service_account",
+            "project_id": "${GCP_PROJECT_ID}",
+            "private_key_id": "${GCP_PRIVATE_KEY_ID}",
+            "private_key": "${PRIVATE_KEY}",
+            "client_email": "${GCP_CLIENT_EMAIL}",
+            "client_id": "${GCP_CLIENT_ID}",
+            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+            "token_uri": "https://oauth2.googleapis.com/token",
+            "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+            "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/${GCP_CLIENT_EMAIL}"
+          }
+EOF
+            GOOGLE_PLAY_JSON_KEY="$(cat /tmp/google_key.json)"
+          fi
+          export GOOGLE_PLAY_JSON_KEY
           cd android
           fastlane playstore
 
