@@ -130,13 +130,11 @@ jobs:
 
       - name: Deploy to Google Play Store
         env:
-          GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+          GOOGLE_PLAY_JSON_KEY: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
         run: |
-          mkdir -p android/fastlane
-          if echo "$GOOGLE_PLAY_SERVICE_ACCOUNT_JSON" | base64 -d >/dev/null 2>&1; then
-            echo "$GOOGLE_PLAY_SERVICE_ACCOUNT_JSON" | base64 -d > android/fastlane/playstore-credentials.json
-          else
-            printf "%s" "$GOOGLE_PLAY_SERVICE_ACCOUNT_JSON" > android/fastlane/playstore-credentials.json
+          # If the secret is base64-encoded, decode it into the same env var
+          if echo "$GOOGLE_PLAY_JSON_KEY" | base64 -d >/dev/null 2>&1; then
+            export GOOGLE_PLAY_JSON_KEY="$(echo "$GOOGLE_PLAY_JSON_KEY" | base64 -d)"
           fi
           cd android
           fastlane playstore
